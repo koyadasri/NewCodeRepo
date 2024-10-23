@@ -1,0 +1,92 @@
+﻿@page "/"
+
+@rendermode InteractiveServer
+
+@inject HttpClient Http
+@inject JwtAuthService AuthStateProvider
+@inject NavigationManager NavigationManager
+
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="UserLoginForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
+        @* <ValidationMessage For="@(() => loginModel.Username)" /> *@
+    </div>
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+        @* <ValidationMessage For="@(() => loginModel.Password)" /> *@
+    </div><br/>
+    <div class="form-group">
+    <button type="submit" class="btn btn-primary">Login</button>
+    </div>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private string errorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            Console.WriteLine($"Username: {loginModel.Username}, Password: {loginModel.Password}");
+
+            var response = await Http.PostAsJsonAsync("https://localhost:7012/api/JwtAuth/login", loginModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+
+                if (result != null)
+                {
+                    // Find the token in the list
+                    var tokenPair = result.FirstOrDefault(x => x.Key.Equals("token", StringComparison.OrdinalIgnoreCase));
+                    if (!string.IsNullOrEmpty(tokenPair.Value))
+                    {
+                        AuthStateProvider.NotifyUserAuthentication(tokenPair.Value);
+                        NavigationManager.NavigateTo("/Home");
+                    }
+                    else
+                    {
+                        errorMessage = "The response from the server did not contain the expected token.";
+                    }
+                }
+                else
+                {
+                    errorMessage = "The response from the server did not contain the expected token.";
+                    Console.WriteLine("Response from server: " + (result != null ? string.Join(", ", result) : "null"));
+                }
+            }
+            else
+            {
+                // Display a message based on the status code
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    errorMessage = "Invalid username or password.";
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    errorMessage = "Invalid login request.";
+                }
+                else
+                {
+                    errorMessage = "An unexpected error occurred. Please try again.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+}

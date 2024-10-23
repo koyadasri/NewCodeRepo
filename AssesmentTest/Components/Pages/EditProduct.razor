@@ -1,0 +1,82 @@
+﻿@page "/displayProduct/{id:int}"
+
+@rendermode InteractiveServer
+
+@inject IProductService _productService
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    [Parameter]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Product? product { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        product = await _productService.GetProductById(this.Id);
+    }
+
+    public void Submit()
+    {
+        if (product != null)
+        {
+            _productService.UpdateProduct(Id, product);
+        }
+
+    }
+}
+
+<h3>Edit Products</h3>
+
+@if (product != null)
+{
+    <EditForm Model="@product" FormName="EditProductForm" OnSubmit="Submit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <div class="row mb-3">
+                <div class="col-2">
+                    <label class="form-label">Product Name:</label>
+                </div>
+                <div class="col-6">
+                    <InputText id="productName" @bind-Value="product.Name" class="form-control" />
+                </div>
+
+            </div>
+            <div class="row mb-3">
+                <div class="col-2">
+                    <label class="form-label">Product Price:</label>
+                </div>
+                <div class="col-6">
+                    <InputNumber id="productPrice" @bind-Value="product.Price" class="form-control" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-2">
+                    <label class="form-label">Product Quantity:</label>
+                </div>
+                <div class="col-6">
+                    <InputNumber id="productQuantity" @bind-Value="product.Quantity" class="form-control" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-2">
+                    <label class="form-label">Product Brand:</label>
+                </div>
+                <div class="col-6">
+                    <InputText id="productBrand" @bind-Value="product.Brand" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-2">
+                <button class="btn btn-primary">Update</button>
+            </div>
+            <div class="col-2">
+                <a href="/displayProduct" class="btn btn-primary">Close</a>
+            </div>
+        </div>
+    </EditForm>
+}
+
