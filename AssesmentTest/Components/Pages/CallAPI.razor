@@ -1,0 +1,41 @@
+﻿@page "/call-api"
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<h3>Call API</h3>
+
+
+<button class="btn btn-primary" @onclick="CallApi">Call APIs</button>
+
+@if (response != null)
+{
+    <p>API 1 Response: @response.Api1Response</p>
+    <p>API 2 Response: @response.Api2Response</p>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red;">Error: @errorMessage</p>
+}
+
+@code {
+    private ApiResponse response;
+    private string errorMessage;
+    private int currentCount = 0;
+
+    private async Task CallApi()
+    {
+        //Console.WriteLine("Button clicked!"); // Check if this prints
+        try
+        {
+            response = await Http.GetFromJsonAsync<ApiResponse>("https://localhost:7012/api/Product/call-apis");
+            errorMessage = null; // Clear previous error messages
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message; // Capture any errors
+            response = null; // Clear previous response
+            Console.WriteLine($"Error: {ex.Message}"); // Log error
+        }
+    }
+}
