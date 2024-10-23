@@ -1,0 +1,66 @@
+﻿<!-- #region c# code-->
+@page "/displayProduct"
+
+@rendermode InteractiveServer
+@inject IProductService _productService
+
+@code {
+
+    private IEnumerable<Product> product = null;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        product = await _productService.GetProducts();
+    }
+
+    private void DeleteProduct(int productID)
+    {
+        if (productID > 0)
+        {
+            _productService.DeleteProduct(productID);
+        }
+    }
+}
+<!-- #endregion-->
+<!-- #region HTML-->
+<h3>DisplayProducts</h3>
+@if (product != null)
+{
+   
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Product Name</th>
+                <th>Product Price</th>
+                <th>Product Quantity</th>
+                <th>Product Brand</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in product)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Price</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Brand</td>
+                    <td><a href="/displayProduct/@item.Id" class="btn btn-link">Edit</a></td>
+                    <td>
+                        <EditForm Model="item" FormName="@($"DeleteProducts{item.Id}")" OnSubmit="@(()=>{DeleteProduct(item.Id);})" Id="DeleteForm">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                            <button type="submit" class="btn btn-primary">Delete</button>
+                        </EditForm>
+                        
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a href="/displayProducts/addProduct" class="btn btn-primary"> Add New Product</a>
+}
+<!-- #endregion-->

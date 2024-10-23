@@ -1,0 +1,70 @@
+﻿@page "/displayProducts/addProduct"
+
+
+<h3>AddProduct</h3>
+
+@inject IProductService _productService
+
+<EditForm Model="@product" FormName="AddProductForm" OnSubmit="Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div>
+        <div class="row mb-3">
+            <div class="col-2">
+                <label class="form-label">Product Name:</label>
+            </div>
+            <div class="col-6">
+                <InputText id="productName" @bind-Value="product.Name" class="form-control" />
+            </div>
+
+        </div>
+        <div class="row mb-3">
+            <div class="col-2">
+                <label class="form-label">Product Price:</label>
+            </div>
+            <div class="col-6">
+                <InputNumber id="productPrice" @bind-Value="product.Price" class="form-control" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-2">
+                <label class="form-label">Product Quantity:</label>
+            </div>
+            <div class="col-6">
+                <InputNumber id="productQuantity" @bind-Value="product.Quantity" class="form-control" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-2">
+                <label class="form-label">Product Brand:</label>
+            </div>
+            <div class="col-6">
+                <InputText id="productBrand" @bind-Value="product.Brand" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-2">
+            <button class="btn btn-primary">Save</button>
+        </div><br/>
+        <div class="col-6">
+            <a href="/displayProduct" class="btn btn-primary">Close</a>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+
+    [SupplyParameterFromForm]
+    private Product product { get; set; } = new Product() { };
+
+    public void Submit()
+    {
+        if (product != null)
+        {
+            _productService.AddProduct(product);
+        }
+
+    }
+
+}
